@@ -1,6 +1,7 @@
 from __future__ import print_function
 from numpy import allclose, array, identity, zeros
 from numpy.linalg import inv
+from pandas import DataFrame
 
 
 class Prob:
@@ -17,6 +18,11 @@ class Prob:
         self.discount_factor = discount_factor
         self.bellman_op = bellman_op
 
+    def expected_values(self, policy):
+        return inv(identity(self.nb_states) -
+                   self.discount_factor * self.state_transition_prob_matrix_func(policy))\
+            .dot(self.expected_values_per_stage_func(policy))
+
     def value_iteration(self, init_values=None, rtol=1e-5, atol=1e-8):
         if init_values:
             curr_values = init_values
@@ -31,7 +37,9 @@ class Prob:
             prev_values = curr_values.copy()
             curr_values = self.bellman_op(terminal_expected_values=prev_values, return_policy=False)
         print('done!')
-        return tuple(self.bellman_op(terminal_expected_values=curr_values, return_policy=True))
+        d = DataFrame(dict(control=tuple(self.bellman_op(terminal_expected_values=curr_values, return_policy=True))))
+        d['expected_value'] = curr_values.flatten()
+        return d
 
     def relative_value_iteration(self, rtol=1e-5, atol=1e-8):
         pass
@@ -59,10 +67,12 @@ class Prob:
                 matrix_inverse = \
                     inv(identity_matrix - self.discount_factor * self.state_transition_prob_matrix_func(prev_policy))
                 cached_matrix_inverses[prev_policy] = matrix_inverse
-            values = matrix_inverse.dot(self.expected_values_per_stage_func(prev_policy))
-            curr_policy = tuple(self.bellman_op(terminal_expected_values=values, return_policy=True))
+            expected_values = matrix_inverse.dot(self.expected_values_per_stage_func(prev_policy))
+            curr_policy = tuple(self.bellman_op(terminal_expected_values=expected_values, return_policy=True))
         print('done!')
-        return curr_policy
+        d = DataFrame(dict(control=curr_policy))
+        d['expected_value'] = expected_values.flatten()
+        return d
 
     def q_factor_policy_iteration(self):
         pass
