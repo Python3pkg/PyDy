@@ -9,7 +9,7 @@ from setuptools import setup
 
 setup(
     name='dy',
-    version='0.0.0',
+    version='0.0.1',
     packages=['dy'],
     url='https://github.com/MBALearnsToCode/PyDy',
     author='MBA Learns to Code',
