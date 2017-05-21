@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 from numpy import allclose, array, identity, zeros
 from numpy.linalg import inv
 from pandas import DataFrame
